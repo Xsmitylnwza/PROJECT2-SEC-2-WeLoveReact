@@ -7,7 +7,7 @@ import hashPassword from '@/composable/hashPassword'
 import isValidImageFile from '@/composable/isValidImageFile'
 import toggleIconShowHidePassword from '@/composable/toggleShowHidePassword'
 import passwordsMatch from '@/composable/passwordsMatch'
-import { registerUser } from '@/libs/fetchUtils'
+import { getUsers, registerUser } from '@/libs/fetchUtils'
 
 const userInfo = ref({
   username: ''.trim(),
@@ -54,35 +54,31 @@ function resetCorrectData() {
 }
 
 async function register() {
-
-  const res = await fetch(`${import.meta.env.VITE_BASE_URL}/users`)
-  const users = await res.json()
+  const users = await getUsers()
   resetCorrectData()
-  if (res.status === 200) {
-    if (checkUserExists(users) || !validateUsername(userInfo.value.username)) {
-      isUsernameValid.value = false
-    } else if (!validateEmail(userInfo.value.email)) {
-      isUsernameValid.value = true
-      isEmailValid.value = false
-    } else if (
-      !passwordsMatch(
-        userInfo.value.password,
-        userInfo.value.confirmPassword
-      ) ||
-      !validatePassword(userInfo.value.password) ||
-      !validatePassword(userInfo.value.confirmPassword)
-    ) {
-      isUsernameValid.value = true
-      isEmailValid.value = true
-      isPasswordValid.value = false
-    } else {
-      isUsernameValid.value = true
-      isEmailValid.value = true
-      isPasswordValid.value = true
-      const data = await registerUser(userInfo.value)
+  if (checkUserExists(users) || !validateUsername(userInfo.value.username)) {
+    isUsernameValid.value = false
+  } else if (!validateEmail(userInfo.value.email)) {
+    isUsernameValid.value = true
+    isEmailValid.value = false
+  } else if (
+    !passwordsMatch(
+      userInfo.value.password,
+      userInfo.value.confirmPassword
+    ) ||
+    !validatePassword(userInfo.value.password) ||
+    !validatePassword(userInfo.value.confirmPassword)
+  ) {
+    isUsernameValid.value = true
+    isEmailValid.value = true
+    isPasswordValid.value = false
+  } else {
+    isUsernameValid.value = true
+    isEmailValid.value = true
+    isPasswordValid.value = true
+    await registerUser(userInfo.value)
 
-      router.push('/login')
-    }
+    router.push('/login')
   }
 }
 
